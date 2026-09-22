@@ -1,0 +1,22 @@
+# Node
+node_modules/
+dist/
+build/
+.env
+
+# Java/Maven
+target/
+*.class
+*.jar
+*.war
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+
+# Local Storage
+backend/local-storage/
