@@ -1,15 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
-import { 
-  LayoutDashboard, 
-  Library, 
-  NotebookPen, 
-  Bot, 
-  Upload, 
-  FileText, 
-  Trash2, 
-  RefreshCw, 
-  CheckCircle2, 
-  AlertCircle, 
+import {
+  LayoutDashboard,
+  Library,
+  NotebookPen,
+  Bot,
+  Upload,
+  FileText,
+  Trash2,
+  RefreshCw,
+  CheckCircle2,
+  AlertCircle,
   Loader2,
   Eye,
   FileCode,
@@ -21,8 +21,8 @@ import {
   ChevronDown
 } from 'lucide-react';
 import axios from 'axios';
-
-const API_BASE = window.location.port === '5173' ? '/api' : 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_BASE = API_BASE_URL.endsWith('/api') ? API_BASE_URL : `${API_BASE_URL.replace(/\/$/, '')}/api`;
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('library');
@@ -78,25 +78,25 @@ export default function App() {
       {/* Main Content Area */}
       <div className="flex-1 overflow-hidden">
         {activeTab === 'dashboard' && (
-          <DashboardView 
-            documents={documents} 
-            onOpenLibrary={() => setActiveTab('library')} 
-            onOpenAnalysis={() => setActiveTab('ai')} 
+          <DashboardView
+            documents={documents}
+            onOpenLibrary={() => setActiveTab('library')}
+            onOpenAnalysis={() => setActiveTab('ai')}
           />
         )}
         {activeTab === 'library' && (
-          <LibraryView 
-            documents={documents} 
-            setDocuments={setDocuments} 
-            refreshDocs={fetchDocuments} 
-            loadingDocs={loadingDocs} 
+          <LibraryView
+            documents={documents}
+            setDocuments={setDocuments}
+            refreshDocs={fetchDocuments}
+            loadingDocs={loadingDocs}
             onAnalyze={handleStartAnalysis}
           />
         )}
         {activeTab === 'notes' && <NotesView />}
         {activeTab === 'ai' && (
-          <AiAnalysisView 
-            documents={documents} 
+          <AiAnalysisView
+            documents={documents}
             initialDocId={activeAnalysisDocId}
             onOpenLibrary={() => setActiveTab('library')}
           />
@@ -110,11 +110,10 @@ function NavItem({ icon, label, active, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${
-        active 
-          ? 'bg-indigo-50 text-indigo-600 shadow-sm' 
+      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${active
+          ? 'bg-indigo-50 text-indigo-600 shadow-sm'
           : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-      }`}
+        }`}
     >
       <span>{icon}</span>
       {label}
@@ -127,7 +126,7 @@ function DashboardView({ documents, onOpenLibrary, onOpenAnalysis }) {
     <div className="p-8 h-full overflow-y-auto">
       <h2 className="text-2xl font-bold mb-6 text-gray-800">Welcome back!</h2>
       <div className="grid grid-cols-3 gap-6 mb-8">
-        <div 
+        <div
           onClick={onOpenLibrary}
           className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-indigo-200 transition-all cursor-pointer"
         >
@@ -139,7 +138,7 @@ function DashboardView({ documents, onOpenLibrary, onOpenAnalysis }) {
           </div>
           <p className="text-3xl font-bold mt-2 text-indigo-600">{documents.length}</p>
         </div>
-        <div 
+        <div
           onClick={onOpenAnalysis}
           className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-violet-200 transition-all cursor-pointer"
         >
@@ -169,7 +168,7 @@ function DashboardView({ documents, onOpenLibrary, onOpenAnalysis }) {
             Inspect your original PDF documents and ask questions to Gemini 3.8 Flash in parallel with live document text extraction and prompt engineering.
           </p>
         </div>
-        <button 
+        <button
           onClick={onOpenAnalysis}
           className="px-6 py-3 bg-white text-indigo-600 rounded-xl font-semibold hover:bg-indigo-50 transition-colors shadow-sm shrink-0"
         >
@@ -201,9 +200,9 @@ function LibraryView({ documents, setDocuments, refreshDocs, loadingDocs, onAnal
     try {
       const d = new Date(dateStr);
       if (isNaN(d.getTime())) return 'Recently';
-      return d.toLocaleDateString(undefined, { 
-        year: 'numeric', 
-        month: 'short', 
+      return d.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
@@ -235,11 +234,11 @@ function LibraryView({ documents, setDocuments, refreshDocs, loadingDocs, onAnal
     try {
       const res = await axios.post(`${API_BASE}/documents/upload`, formData);
       const newDoc = res.data;
-      
+
       setDocuments(prev => [newDoc, ...prev.filter(d => d.id !== newDoc.id)]);
-      setStatusBanner({ 
-        type: 'success', 
-        message: `"${file.name}" uploaded successfully!` 
+      setStatusBanner({
+        type: 'success',
+        message: `"${file.name}" uploaded successfully!`
       });
 
       setFile(null);
@@ -249,14 +248,14 @@ function LibraryView({ documents, setDocuments, refreshDocs, loadingDocs, onAnal
       refreshDocs();
     } catch (error) {
       console.error('Upload failed', error);
-      const errorMsg = error.response?.data?.error || 
-                       error.response?.data?.message || 
-                       error.response?.data || 
-                       error.message || 
-                       'Upload failed. Please check backend connection.';
-      setStatusBanner({ 
-        type: 'error', 
-        message: typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg) 
+      const errorMsg = error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.response?.data ||
+        error.message ||
+        'Upload failed. Please check backend connection.';
+      setStatusBanner({
+        type: 'error',
+        message: typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg)
       });
     } finally {
       setUploading(false);
@@ -287,7 +286,7 @@ function LibraryView({ documents, setDocuments, refreshDocs, loadingDocs, onAnal
           <h2 className="text-2xl font-bold text-gray-900">Document Library</h2>
           <p className="text-sm text-gray-500 mt-1">Upload and manage research documents</p>
         </div>
-        <button 
+        <button
           onClick={refreshDocs}
           disabled={loadingDocs}
           className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
@@ -299,18 +298,17 @@ function LibraryView({ documents, setDocuments, refreshDocs, loadingDocs, onAnal
       </div>
 
       {statusBanner && (
-        <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 border transition-all animate-fadeIn ${
-          statusBanner.type === 'success' 
-            ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
+        <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 border transition-all animate-fadeIn ${statusBanner.type === 'success'
+            ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
             : 'bg-rose-50 border-rose-200 text-rose-800'
-        }`}>
+          }`}>
           {statusBanner.type === 'success' ? (
             <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
           ) : (
             <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
           )}
           <span className="text-sm font-medium flex-1">{statusBanner.message}</span>
-          <button 
+          <button
             onClick={() => setStatusBanner(null)}
             className="text-gray-400 hover:text-gray-700 text-xs px-2 py-1"
           >
@@ -318,9 +316,9 @@ function LibraryView({ documents, setDocuments, refreshDocs, loadingDocs, onAnal
           </button>
         </div>
       )}
-      
+
       {/* Upload Box */}
-      <div 
+      <div
         onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={e => {
@@ -331,20 +329,19 @@ function LibraryView({ documents, setDocuments, refreshDocs, loadingDocs, onAnal
           }
         }}
         onClick={() => fileInputRef.current && fileInputRef.current.click()}
-        className={`bg-white rounded-2xl border-2 p-8 text-center transition-all cursor-pointer mb-8 relative ${
-          isDragging 
-            ? 'border-indigo-500 bg-indigo-50/50 scale-[1.01]' 
+        className={`bg-white rounded-2xl border-2 p-8 text-center transition-all cursor-pointer mb-8 relative ${isDragging
+            ? 'border-indigo-500 bg-indigo-50/50 scale-[1.01]'
             : 'border-dashed border-gray-300 hover:border-indigo-400 hover:bg-gray-50/50'
-        }`}
+          }`}
       >
-        <input 
+        <input
           ref={fileInputRef}
-          type="file" 
-          accept=".pdf" 
-          onChange={e => handleFileSelect(e.target.files[0])} 
-          className="hidden" 
+          type="file"
+          accept=".pdf"
+          onChange={e => handleFileSelect(e.target.files[0])}
+          className="hidden"
         />
-        
+
         <div className="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-4">
           <Upload className="w-6 h-6" />
         </div>
@@ -353,17 +350,17 @@ function LibraryView({ documents, setDocuments, refreshDocs, loadingDocs, onAnal
           {file ? file.name : 'Upload new document'}
         </h3>
         <p className="text-gray-500 text-sm mt-1 mb-4">
-          {file 
-            ? `Size: ${formatFileSize(file.size)} • Click below to upload` 
+          {file
+            ? `Size: ${formatFileSize(file.size)} • Click below to upload`
             : 'Drag & drop a PDF here, or click to browse (up to 50MB)'}
         </p>
 
         <div className="flex justify-center items-center gap-3" onClick={e => e.stopPropagation()}>
           {file ? (
             <div className="flex items-center gap-3">
-              <button 
-                onClick={handleUpload} 
-                disabled={uploading} 
+              <button
+                onClick={handleUpload}
+                disabled={uploading}
                 className="px-6 py-2.5 bg-indigo-600 text-white rounded-full font-medium hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-sm hover:shadow flex items-center gap-2"
               >
                 {uploading ? (
@@ -378,7 +375,7 @@ function LibraryView({ documents, setDocuments, refreshDocs, loadingDocs, onAnal
                   </>
                 )}
               </button>
-              <button 
+              <button
                 onClick={() => {
                   setFile(null);
                   if (fileInputRef.current) fileInputRef.current.value = '';
@@ -390,7 +387,7 @@ function LibraryView({ documents, setDocuments, refreshDocs, loadingDocs, onAnal
               </button>
             </div>
           ) : (
-            <button 
+            <button
               type="button"
               onClick={() => fileInputRef.current && fileInputRef.current.click()}
               className="px-6 py-2 bg-indigo-50 text-indigo-600 rounded-full font-medium hover:bg-indigo-100 transition-colors text-sm"
@@ -422,8 +419,8 @@ function LibraryView({ documents, setDocuments, refreshDocs, loadingDocs, onAnal
           <div className="overflow-y-auto flex-1 pr-1">
             <ul className="space-y-3">
               {documents.map(doc => (
-                <li 
-                  key={doc.id} 
+                <li
+                  key={doc.id}
                   className="p-4 border border-gray-100 rounded-xl hover:bg-gray-50/80 transition-all flex justify-between items-center group shadow-none hover:shadow-sm"
                 >
                   <div className="flex items-center gap-3 overflow-hidden mr-4">
@@ -439,9 +436,9 @@ function LibraryView({ documents, setDocuments, refreshDocs, loadingDocs, onAnal
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
-                    <button 
+                    <button
                       onClick={() => onAnalyze(doc.id)}
                       className="px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors"
                       title="Analyze document side-by-side"
@@ -449,7 +446,7 @@ function LibraryView({ documents, setDocuments, refreshDocs, loadingDocs, onAnal
                       <Bot className="w-3.5 h-3.5" />
                       Analyze
                     </button>
-                    <button 
+                    <button
                       onClick={(e) => handleDelete(doc.id, doc.title, e)}
                       disabled={deletingId === doc.id}
                       className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
@@ -654,9 +651,9 @@ function AiAnalysisView({ documents, initialDocId, onOpenLibrary }) {
             </div>
 
             {activeDoc && (
-              <a 
-                href={`${API_BASE}/documents/${activeDoc.id}/file`} 
-                target="_blank" 
+              <a
+                href={`${API_BASE}/documents/${activeDoc.id}/file`}
+                target="_blank"
                 rel="noreferrer"
                 className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
                 title="Open PDF in new tab"
@@ -670,22 +667,20 @@ function AiAnalysisView({ documents, initialDocId, onOpenLibrary }) {
           <div className="flex items-center bg-gray-100 p-1 rounded-xl border border-gray-200/80 shrink-0">
             <button
               onClick={() => setViewMode('pdf')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                viewMode === 'pdf'
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${viewMode === 'pdf'
                   ? 'bg-white text-indigo-600 shadow-sm'
                   : 'text-gray-500 hover:text-gray-800'
-              }`}
+                }`}
             >
               <Eye className="w-3.5 h-3.5" />
               PDF View
             </button>
             <button
               onClick={() => setViewMode('text')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                viewMode === 'text'
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${viewMode === 'text'
                   ? 'bg-white text-indigo-600 shadow-sm'
                   : 'text-gray-500 hover:text-gray-800'
-              }`}
+                }`}
             >
               <FileCode className="w-3.5 h-3.5" />
               Extracted Text
@@ -799,11 +794,10 @@ function AiAnalysisView({ documents, initialDocId, onOpenLibrary }) {
               )}
 
               <div
-                className={`max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed shadow-sm relative group ${
-                  msg.role === 'user'
+                className={`max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed shadow-sm relative group ${msg.role === 'user'
                     ? 'bg-indigo-600 text-white rounded-tr-none'
                     : 'bg-white text-gray-800 border border-gray-200/80 rounded-tl-none'
-                }`}
+                  }`}
               >
                 <div className="whitespace-pre-wrap selection:bg-indigo-200 font-sans">
                   {msg.content}
